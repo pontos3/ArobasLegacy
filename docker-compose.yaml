@@ -1,0 +1,37 @@
+version: '3.7'
+services:
+    database:
+        build: ./sqlserver
+        image: mcr.microsoft.com/mssql/server:2017-latest
+        container_name: sqlserver
+        environment: 
+            SA_PASSWORD: P@ssw0rd
+            ACCEPT_EULA: Y
+            MSSQL_PID: Express
+        volumes:
+            - /var/opt/data/mssql/data/:/var/opt/mssql/data/
+            - /var/opt/data/mssql/backup/:/var/opt/mssql/backup/
+            - /var/opt/data/mssql/restore/:/var/opt/mssql/restore/
+            - ./sqlserver/scripts/bash/:/tmp/pse/
+        ports:
+            - "1433:1433"
+        networks:
+            arobas_network:
+
+    # database:
+    #     image: mcr.microsoft.com/mssql/server:2017-latest
+    #     container_name: sqlserver
+    #     environment: 
+    #         SA_PASSWORD: P@ssw0rd
+    #         ACCEPT_EULA: Y
+    #         MSSQL_PID: Express
+    #     volumes:
+    #         - /var/opt/data/mssql/data:/var/opt/mssql/data/
+    #         - /var/opt/data/mssql/backup:/var/opt/mssql/backup
+    #     ports:
+    #         - "1433:1433"
+    #     networks:
+    #         arobas_network:
+
+networks:
+    arobas_network:
