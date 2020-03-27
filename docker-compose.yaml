@@ -12,7 +12,7 @@ services:
             - /var/opt/data/mssql/data/:/var/opt/mssql/data/
             - /var/opt/data/mssql/backup/:/var/opt/mssql/backup/
             - /var/opt/data/mssql/restore/:/var/opt/mssql/restore/
-            - ./sqlserver/scripts/bash/:/tmp/pse/
+            #- ./sqlserver/scripts/bash/:/tmp/pse/
         ports:
             - "1433:1433"
         networks:
