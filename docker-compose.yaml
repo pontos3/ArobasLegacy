@@ -3,35 +3,38 @@ services:
     database:
         build: ./sqlserver
         image: mcr.microsoft.com/mssql/server:2017-latest
-        container_name: sqlserver
         environment: 
             SA_PASSWORD: P@ssw0rd
             ACCEPT_EULA: Y
-            MSSQL_PID: Express
         volumes:
-            - /var/opt/data/mssql/data/:/var/opt/mssql/data/
-            - /var/opt/data/mssql/backup/:/var/opt/mssql/backup/
-            - /var/opt/data/mssql/restore/:/var/opt/mssql/restore/
-            #- ./sqlserver/scripts/bash/:/tmp/pse/
+            - ./sqlserver/data/:/var/opt/mssql/data/
+            - ./sqlserver/backup/:/var/opt/mssql/backup/
+            - ./sqlserver/restore/:/var/opt/mssql/restore/
         ports:
             - "1433:1433"
         networks:
             arobas_network:
+    
+    appsrv:
+        image: tomcat:6.0.48
+        depends_on: 
+            - database
+        ports:
+            - "8888:8080"
+        volumes:
+            - ./appsrv/conf/:/usr/local/tomcat/conf
+            - ./appsrv/webapps/:/usr/local/tomcat/webapps
+        networks:
+            arobas_network:
 
-    # database:
-    #     image: mcr.microsoft.com/mssql/server:2017-latest
-    #     container_name: sqlserver
-    #     environment: 
-    #         SA_PASSWORD: P@ssw0rd
-    #         ACCEPT_EULA: Y
-    #         MSSQL_PID: Express
-    #     volumes:
-    #         - /var/opt/data/mssql/data:/var/opt/mssql/data/
-    #         - /var/opt/data/mssql/backup:/var/opt/mssql/backup
-    #     ports:
-    #         - "1433:1433"
-    #     networks:
-    #         arobas_network:
+    proxy:
+        image: httpd:2.4.41-alpine
+        depends_on: 
+            - appsrv
+        ports:
+            - "81:80"
+        networks:
+            arobas_network:
 
 networks:
     arobas_network:
