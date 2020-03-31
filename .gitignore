@@ -1,3 +1,3 @@
 appsrv/webapps/*
-sqlserver/data/*
-sqlserver/restore/*
+database/data/*
+database/restore/*
