@@ -273,6 +273,7 @@ Le manager tomcat est accessible à travers le proxy apache. Il est possible de 
 - Modifier le fichier [./proxy/conf/vhosts/allTomcat.conf](./proxy/conf/vhosts/allTomcat.conf) afin de tenir compte de la partie statique et de l'application web déployée au préalable.
 
 # TODO LIST
+
 - [ ] database
     - [ ] créer un compte dbo pour chacune des bases de données restaurées après le restauration.
     - [ ] forcer un schrink database après la restauration afin de limiter la taille du fichier de log.
