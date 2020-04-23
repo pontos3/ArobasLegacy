@@ -21,6 +21,16 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Released]
 
+## [1.0.0] - 2020-04-23
+
+### Added
+
+Première version foncionnelle comprenant les éléments suivants:
+
+* Un moteur de base de données sql server 2017 developer edition.
+* Un serveur proxy apache 2.4
+* Un serveur tomcat 6
+
 ---
 
 <!-- Links -->
