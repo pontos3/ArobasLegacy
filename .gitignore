@@ -1,3 +1,6 @@
 appsrv/webapps/*
+appsrv/conf/Catalina/*
+appsrv/logs/*
 database/data/*
 database/restore/*
+proxy/conf/vhosts/*/*
