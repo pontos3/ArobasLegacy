@@ -26,7 +26,8 @@ docker run hello-world
 .
 ├── appsrv
 │   ├── conf            ## Répertoire de configuration de tomcat
-│   └── webapps         ## Répertoire où déployer les fichiers war des applications
+│   ├── webapps         ## Répertoire où déployer les fichiers war des applications
+│   └── logs            ## Répertoire où les logs seronts déposés
 ├── database            ## Le configuration du serveur de base de données
 │   ├── Dockerfile      ## Le DokerFile permettant d'adapter la base de données
 │   ├── restore         ## L'emplacement des fichier .bak pour les restauration des BDD
@@ -71,6 +72,7 @@ services:
         volumes:
             - {APPSRV_CONF_DIR}:/usr/local/tomcat/conf
             - {APPSRV_WEBAPPS_DIR}:/usr/local/tomcat/webapps
+            - {APPSRV_LOGS_DIR}:/usr/local/tomcat/logs
         networks:
             arobas_network:
 
@@ -95,27 +97,29 @@ networks:
 
 La liste ci-dessous indique la signification de chaque paramètre du fichier docker-compose.yaml
 
-* [ ] ***{DATABASE_SA_PASSWORD}*** : Mot de passe du compte SA de la base ***SQLSERVER***.
+* ***{DATABASE_SA_PASSWORD}*** : Mot de passe du compte SA de la base ***SQLSERVER***.
 
-* [ ] ***{DATABASE_DATA_DIR}*** : Répertoire hôte qui contiendra les fichiers de base de données ***SQLSERVER***.
+* ***{DATABASE_DATA_DIR}*** : Répertoire hôte qui contiendra les fichiers de base de données ***SQLSERVER***.
 
-* [ ] ***{DATABASE_BACKUP_DIR}*** : Répertoire hôte utilisé lors des sauvegarde des bases de données ***SQLSERVER***.
+* ***{DATABASE_BACKUP_DIR}*** : Répertoire hôte utilisé lors des sauvegarde des bases de données ***SQLSERVER***.
 
-* [ ] ***{DATABASE_RESTORE_DIR}*** : Répertoire hôte où déposer les fichier backup de base de données pour créer ou écraser une base de données ***SQLSERVER***. Exécution d'un CRON toutes les 30 secondes, prenant en compte les fichiers ***.bak*** pour les restaurer et les transformer en fichier ***.oldbak***.
+* ***{DATABASE_RESTORE_DIR}*** : Répertoire hôte où déposer les fichier backup de base de données pour créer ou écraser une base de données ***SQLSERVER***. Exécution d'un CRON toutes les 30 secondes, prenant en compte les fichiers ***.bak*** pour les restaurer et les transformer en fichier ***.oldbak***.
 
-* [ ] ***{DATABASE_PORT}*** : Port hôte permettant d'accéder à la base de données depuis l'hôte pour exécuter des scripts sql.
+* ***{DATABASE_PORT}*** : Port hôte permettant d'accéder à la base de données depuis l'hôte pour exécuter des scripts sql.
 
-* [ ] ***{APPSRV_PORT}*** : Port hôte permettant d'accéder au service ***Tomcat*** en direct sans passer par le proxy apache
+* ***{APPSRV_PORT}*** : Port hôte permettant d'accéder au service ***Tomcat*** en direct sans passer par le proxy apache
 
-* [ ] ***{APPSRV_CONF_DIR}*** : Emplacement des fichiers de configuration ***Tomcat*** pris en compte par le conteneur tomcat au démarrage.
+* ***{APPSRV_CONF_DIR}*** : Emplacement des fichiers de configuration ***Tomcat*** pris en compte par le conteneur tomcat au démarrage.
 
-* [ ] ***{APPSRV_WEBAPPS_DIR}***: Emplacement où déposer les livrables (fichiers ***.war*** ) pour qu'ils soient pris en compte par ***Tomcat***.
+* ***{APPSRV_WEBAPPS_DIR}***: Emplacement où déposer les livrables (fichiers ***.war*** ) pour qu'ils soient pris en compte par ***Tomcat***.
 
-* [ ] ***{PROXY_PORT}*** : Port de l'hôte qui permettra d'accéder au service web et donc aux applications déployées.
+* ***{APPSRV_LOGS_DIR}***: Emplacement des fichiers de log générés par ***Tomcat***.
 
-* [ ] ***{PROXY_CONF_DIR}*** : Répertoire de l'hôte contenant les fichiers de configuration du service ***Apache-httpd*** pris en compte au démarrage du service.
+* ***{PROXY_PORT}*** : Port de l'hôte qui permettra d'accéder au service web et donc aux applications déployées.
 
-* [ ] ***{PROXY_WEB_DIR}*** : Répertoire de l'hôte contenant les fichiers statiques (pages WEB) du service ***Apache-httpd*** pris en compte au démarrage du service.
+* ***{PROXY_CONF_DIR}*** : Répertoire de l'hôte contenant les fichiers de configuration du service ***Apache-httpd*** pris en compte au démarrage du service.
+
+* ***{PROXY_WEB_DIR}*** : Répertoire de l'hôte contenant les fichiers statiques (pages WEB) du service ***Apache-httpd*** pris en compte au démarrage du service.
 
 ### L'exemple ci-dessous est valide sur une debian
 
@@ -285,13 +289,3 @@ Le manager tomcat est accessible à travers le proxy apache. Il est possible de 
 
 * Déployer la partie statique de votre application dans le répertoire **"{PROXY_WEB_DIR}"**
 * Modifier le fichier [./proxy/conf/vhosts/allTomcat.conf](./proxy/conf/vhosts/allTomcat.conf) afin de tenir compte de la partie statique et de l'application web déployée au préalable.
-
-## TODO LIST
-
-* [ ] database
-  * [ ] créer un compte dbo pour chacune des bases de données restaurées après le restauration.
-  * [ ] forcer un schrink database après la restauration afin de limiter la taille du fichier de log.
-* [ ] appsrv
-  * [ ] tester le déploiement d'un war et écrire la procédure associée:
-    * copie du fichier en extension *".newwar"* dans le répertoire  webapps
-    * renommer l'extension du fichier *".newwar"* en *".war"*
