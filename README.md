@@ -10,7 +10,9 @@ Fournir une infrastructure rassemblant
 
 ## Installer docker et docker-compose
 
-1. installer docker comme indiqué par le site à l'adresse suivante : [https://docs.docker.com/install/linux/docker-ce/debian/](https://docs.docker.com/install/linux/docker-ce/debian/)
+1. installer docker comme indiqué par le site à l'adresse suivante : [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/)
+
+1. installer docker-compose comme indiqué par le site à l'adresse suivante : [https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/)
 
 1. Tester l'installation en chargeant une première image et un premier conteneur
 
