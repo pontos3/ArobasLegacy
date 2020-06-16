@@ -16,37 +16,78 @@ services:
             arobas_network:
     
     appsrv:
-        
         image: tomcat:6.0.48
         depends_on: 
             - database
         ports:
              - "8888:8080"
         volumes:
-            - ./appsrv/conf/:/usr/local/tomcat/conf
+            - ./appsrv/conf/server.xml:/usr/local/tomcat/conf/server.xml            
+            - ./appsrv/conf/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
+            - ./appsrv/conf/logging.properties:/usr/local/tomcat/conf/logging.properties
             - ./appsrv/webapps/:/usr/local/tomcat/webapps
             - ./appsrv/logs/:/usr/local/tomcat/logs
         networks:
             arobas_network:
 
     authsrv:
-        image: tomcat:9.0.35-jdk8-openjdk
-        depends_on: 
-            - database
-        ports:
-             - "8889:8081"
-        networks:
-            arobas_network:
-
-
-    proxy:
-        image: httpd:2.4.41-alpine
+        build:
+            context: ./authsrv
+            args:
+                SERVERNAME: $EXPOSE_PROXY_AUTH_SRV_NAME
+                SCOPE: $EXPOSE_PROXY_AUTH_DOMAIN
+                PROXYPORT: $EXPOSE_PROXY_AUTH_PORT                
         depends_on: 
             - appsrv
         ports:
-            - "81:80"
+             - "8889:8080"
         volumes:
-            - ./proxy/conf/:/usr/local/apache2/conf/ 
+            - ./authsrv/metadata_sp/:/opt/shibboleth-idp/metadata_sp:rw
+#            - ./authsrv/logs/:/usr/local/tomcat/logs
+        networks:
+            arobas_network:
+              aliases:
+                - idpmae.dev.diplomatie.gouv.fr
+
+    sptest:
+        build: 
+            context: ./sptest
+            args:
+                SERVERNAME: $EXPOSE_PROXY_AUTH_SRV_NAME
+                SCOPE: $EXPOSE_PROXY_AUTH_DOMAIN
+                PROXYPORT: $EXPOSE_PROXY_AUTH_PORT
+                SPTEST_PORT: $EXPOSE_SPTEST_PORT
+#        image: unicon/shibboleth-sp:3.0.4
+        depends_on: 
+            - authsrv
+        volumes:
+            - ./sptest/shibboleth-sp/attribute-map.xml:/etc/shibboleth/attribute-map.xml
+            - ./sptest/shibboleth-sp/sp-encrypt-cert.pem:/etc/shibboleth/sp-encrypt-cert.pem            
+            - ./sptest/shibboleth-sp/sp-encrypt-key.pem:/etc/shibboleth/sp-encrypt-key.pem
+            - ./sptest/shibboleth-sp/sp-signing-cert.pem:/etc/shibboleth/sp-signing-cert.pem            
+            - ./sptest/shibboleth-sp/sp-signing-key.pem:/etc/shibboleth/sp-signing-key.pem
+            - ./sptest/appfiles:/var/www/html
+        networks:
+            arobas_network:
+        ports:
+            - "82:80"
+            - "$EXPOSE_SPTEST_PORT:443"
+
+    proxy:
+#        build: ./proxy
+        image: httpd:2.4.41
+        depends_on: 
+            - appsrv
+            - authsrv
+        ports:
+            - "81:80"
+            - "$EXPOSE_PROXY_AUTH_PORT:443"
+        volumes:
+            - ./proxy/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf
+            - ./proxy/conf/vhosts:/usr/local/apache2/conf/vhosts
+            - ./proxy/conf/vhosts_secure:/usr/local/apache2/conf/vhosts_secure
+            - ./proxy/conf/server.crt:/usr/local/apache2/conf/server.crt
+            - ./proxy/conf/server.key:/usr/local/apache2/conf/server.key
             - ./proxy/www/:/usr/local/apache2/htdocs/
         networks:
             arobas_network:

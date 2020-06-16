@@ -21,6 +21,21 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Released]
 
+## [draft-1.1.0] - 2020-05-28
+
+### Added
+
+Ajout des éléments nécessaires pour l'authentification des utilisateurs:
+
+* Création d'une arborescence pour le déploiement de shibboleth
+* Ajout d'un serveur apache tomcat 9
+* Ajout d'un sptest spéraré du proxy.
+
+### Removed
+
+* Suppression de la partie sp_test sur la configuration du proxy
+* Suppression des fichier de configuration apache inutilisés.
+
 ## [1.0.0] - 2020-04-23
 
 ### Added
@@ -40,5 +55,5 @@ Première version foncionnelle comprenant les éléments suivants:
 <!-- Versions -->
 [Unreleased]: https://github.com/pontos3/ArobasLegacy/compare/v1.0.0...HEAD
 [Released]: https://github.com/pontos3/ArobasLegacy/releases
-[0.0.2]: https://github.com/pontos3/ArobasLegacy/compare/v0.0.1..v0.0.2
-[0.0.1]: https://github.com/pontos3/ArobasLegacy/releases/v0.0.1
+[1.1.0]: https://github.com/pontos3/ArobasLegacy/compare/v1.0.0..v1.1.0
+[1.0.0]: https://github.com/pontos3/ArobasLegacy/releases/v1.0.

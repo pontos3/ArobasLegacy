@@ -1,4 +1,5 @@
 {
     "no-inline-html": false,
-    "line_length": false
+    "line_length": false,
+    "no-duplicate-header": false
 }
