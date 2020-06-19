@@ -9,6 +9,8 @@ if [ $status -ne 0 ]; then
   exit $status
 fi
 
+cp -f /opt/shibboleth-idp/metadata/idp-metadata.xml /opt/shibboleth-idp/shared-metadata/idp-metadata.xml
+
 # cron activate-metadata
 while sleep 30; do
   /opt/shibboleth-idp/bin/activate-metadata-docker.sh
