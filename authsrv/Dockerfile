@@ -9,6 +9,9 @@ ARG PORT_AROBASAPI="8080"
 
 ADD deliverable/idp-mae.tar.gz /tmp/
 COPY scripts/*.sh /opt/shibboleth-idp/bin/
+
+RUN  mv /tmp/idp-mae-* /tmp/idp-mae
+
 WORKDIR /tmp/idp-mae/bin
 RUN SCOPERESULT=$(if [ $PROXYPORT = 443 ]; then echo "$SCOPE"; else echo "$SCOPE:$PROXYPORT"; fi;) \
     && sed -i '/<Connector port="8080"/c\<Connector port="8080" protocol="HTTP/1.1" secure="true" proxyName="'${SERVERNAME}'.'${SCOPE}'" proxyPort="'${PROXYPORT}'" scheme="https"' /usr/local/tomcat/conf/server.xml \

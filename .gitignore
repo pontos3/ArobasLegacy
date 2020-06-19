@@ -4,6 +4,7 @@ appsrv/logs/*
 database/data/*
 database/restore/*
 proxy/conf/vhosts/*/*
+proxy/www/*
 authsrv/logs/*
 authsrv/deliverable/idp-mae.tar.gz
 authsrv/metadata_sp/last-activate.log

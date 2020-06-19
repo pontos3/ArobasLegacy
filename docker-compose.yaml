@@ -27,6 +27,8 @@ services:
             - ./appsrv/conf/logging.properties:/usr/local/tomcat/conf/logging.properties
             - ./appsrv/webapps/:/usr/local/tomcat/webapps
             - ./appsrv/logs/:/usr/local/tomcat/logs
+            - ./appsrv/ssl/:/usr/share/etc/ssl
+            - metadata-idp:/usr/share/etc/ssl/arobas/metadata:ro
         networks:
             arobas_network:
 
@@ -43,6 +45,7 @@ services:
              - "8889:8080"
         volumes:
             - ./authsrv/metadata_sp/:/opt/shibboleth-idp/metadata_sp:rw
+            - metadata-idp:/opt/shibboleth-idp/shared-metadata/:rw
 #            - ./authsrv/logs/:/usr/local/tomcat/logs
         networks:
             arobas_network:
@@ -57,7 +60,6 @@ services:
                 SCOPE: $EXPOSE_PROXY_AUTH_DOMAIN
                 PROXYPORT: $EXPOSE_PROXY_AUTH_PORT
                 SPTEST_PORT: $EXPOSE_SPTEST_PORT
-#        image: unicon/shibboleth-sp:3.0.4
         depends_on: 
             - authsrv
         volumes:
@@ -67,6 +69,7 @@ services:
             - ./sptest/shibboleth-sp/sp-signing-cert.pem:/etc/shibboleth/sp-signing-cert.pem            
             - ./sptest/shibboleth-sp/sp-signing-key.pem:/etc/shibboleth/sp-signing-key.pem
             - ./sptest/appfiles:/var/www/html
+            - metadata-idp:/etc/shibboleth/metadata:ro
         networks:
             arobas_network:
         ports:
@@ -74,7 +77,6 @@ services:
             - "$EXPOSE_SPTEST_PORT:443"
 
     proxy:
-#        build: ./proxy
         image: httpd:2.4.41
         depends_on: 
             - appsrv
@@ -94,3 +96,6 @@ services:
 
 networks:
     arobas_network:
+
+volumes:
+    metadata-idp:
