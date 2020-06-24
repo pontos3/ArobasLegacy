@@ -16,7 +16,8 @@ FROM unicon/shibboleth-sp:3.0.4
 #COPY --from=arobas_env_authsrv:latest /opt/shibboleth-idp/metadata/idp-metadata.xml /etc/shibboleth/idp-metadata.xml
 
 WORKDIR /etc/shibboleth/
-COPY --from=subst /opt/pre_build/ /etc/shibboleth/
+COPY --from=subst /opt/pre_build/sp_shibboleth/ /etc/shibboleth/
+COPY --from=subst /opt/pre_build/appfiles/ /var/www/html/
 COPY scripts/*.sh /opt/sptest/bin/
 RUN mkdir -p /usr/share/etc/ssl/saml/
 CMD [ "/opt/sptest/bin/wrapper.sh" ]
