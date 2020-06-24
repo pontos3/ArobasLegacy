@@ -16,7 +16,12 @@ services:
             arobas_network:
     
     appsrv:
-        image: tomcat:6.0.48
+        build:
+            context: ./appsrv
+            args:
+                PROXY_APP_SCHEME: $EXPOSE_PROXY_APP_SCHEME
+                PROXY_APP_HOST: $EXPOSE_PROXY_APP_HOST
+                PROXY_APP_PORT: $EXPOSE_PROXY_APP_PORT
         depends_on: 
             - database
         ports:
@@ -25,9 +30,10 @@ services:
             - ./appsrv/conf/server.xml:/usr/local/tomcat/conf/server.xml            
             - ./appsrv/conf/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
             - ./appsrv/conf/logging.properties:/usr/local/tomcat/conf/logging.properties
-            - ./appsrv/webapps/:/usr/local/tomcat/webapps
+#            - ./appsrv/webapps/:/usr/local/tomcat/webapps
             - ./appsrv/logs/:/usr/local/tomcat/logs
-            - ./appsrv/ssl/:/usr/share/etc/ssl
+#            - ./appsrv/ssl/:/usr/share/etc/ssl
+            - metadata-sp:/usr/share/etc/ssl/saml/:rw
             - metadata-idp:/usr/share/etc/ssl/arobas/metadata:ro
         networks:
             arobas_network:
@@ -44,7 +50,8 @@ services:
         ports:
              - "8889:8080"
         volumes:
-            - ./authsrv/metadata_sp/:/opt/shibboleth-idp/metadata_sp:rw
+            - metadata-sp:/opt/shibboleth-idp/metadata_sp:rw
+#            - ./authsrv/metadata_sp/:/opt/shibboleth-idp/metadata_sp:rw
             - metadata-idp:/opt/shibboleth-idp/shared-metadata/:rw
 #            - ./authsrv/logs/:/usr/local/tomcat/logs
         networks:
@@ -59,22 +66,24 @@ services:
                 SERVERNAME: $EXPOSE_PROXY_AUTH_SRV_NAME
                 SCOPE: $EXPOSE_PROXY_AUTH_DOMAIN
                 PROXYPORT: $EXPOSE_PROXY_AUTH_PORT
-                SPTEST_PORT: $EXPOSE_SPTEST_PORT
+                SPTEST_HOST: $EXPOSE_SPTEST_HOST                
+                SPTEST_SECURE_PORT: $EXPOSE_SPTEST_SECURE_PORT
         depends_on: 
             - authsrv
         volumes:
-            - ./sptest/shibboleth-sp/attribute-map.xml:/etc/shibboleth/attribute-map.xml
-            - ./sptest/shibboleth-sp/sp-encrypt-cert.pem:/etc/shibboleth/sp-encrypt-cert.pem            
-            - ./sptest/shibboleth-sp/sp-encrypt-key.pem:/etc/shibboleth/sp-encrypt-key.pem
-            - ./sptest/shibboleth-sp/sp-signing-cert.pem:/etc/shibboleth/sp-signing-cert.pem            
-            - ./sptest/shibboleth-sp/sp-signing-key.pem:/etc/shibboleth/sp-signing-key.pem
+            # - ./sptest/shibboleth-sp/attribute-map.xml:/etc/shibboleth/attribute-map.xml
+            # - ./sptest/shibboleth-sp/sp-encrypt-cert.pem:/etc/shibboleth/sp-encrypt-cert.pem            
+            # - ./sptest/shibboleth-sp/sp-encrypt-key.pem:/etc/shibboleth/sp-encrypt-key.pem
+            # - ./sptest/shibboleth-sp/sp-signing-cert.pem:/etc/shibboleth/sp-signing-cert.pem            
+            # - ./sptest/shibboleth-sp/sp-signing-key.pem:/etc/shibboleth/sp-signing-key.pem
             - ./sptest/appfiles:/var/www/html
+            - metadata-sp:/usr/share/etc/ssl/saml/:rw
             - metadata-idp:/etc/shibboleth/metadata:ro
         networks:
             arobas_network:
         ports:
             - "82:80"
-            - "$EXPOSE_SPTEST_PORT:443"
+            - "$EXPOSE_SPTEST_SECURE_PORT:443"
 
     proxy:
         image: httpd:2.4.41
@@ -99,3 +108,4 @@ networks:
 
 volumes:
     metadata-idp:
+    metadata-sp:

@@ -1,0 +1,17 @@
+<Attributes xmlns="urn:mace:shibboleth:2.0:attribute-map" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <Attribute name="Administration" id="Administration">
+        <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+    <Attribute name="Login" id="Login">
+        <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
+    </Attribute>    
+    <Attribute name="Id_SSO" id="Id_SSO">
+        <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+    <Attribute name="Nom" id="Nom">
+        <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+
+</Attributes>
