@@ -5,6 +5,9 @@ appsrv/pre_build/*
 database/data/*
 database/restore/*
 proxy/conf/vhosts/*/*
+!proxy/conf/vhosts/allTomcat.conf
+proxy/conf/vhosts_secure/*/*
+!proxy/conf/vhosts_secure/allTomcat.conf
 proxy/www/*
 !proxy/www/admin/*
 !proxy/www/index.html
