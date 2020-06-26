@@ -11,7 +11,7 @@ services:
             - /var/opt/data/mssql/backup/:/var/opt/mssql/backup/
             - ./database/restore/:/var/opt/mssql/restore/
         ports:
-            - "1433:1433"
+            - "$EXPOSE_DATABASE_PORT:1433"
         networks:
             arobas_network:
     
@@ -19,20 +19,18 @@ services:
         build:
             context: ./appsrv
             args:
-                PROXY_APP_SCHEME: $EXPOSE_PROXY_APP_SCHEME
+                PROXY_APP_SCHEME: "https"
                 PROXY_APP_HOST: $EXPOSE_PROXY_APP_HOST
-                PROXY_APP_PORT: $EXPOSE_PROXY_APP_PORT
+                PROXY_APP_PORT: $EXPOSE_PROXY_HTTPS_PORT
         depends_on: 
             - database
-        ports:
-             - "8888:8080"
+        # ports:
+        #      - "8888:8080"
         volumes:
             - ./appsrv/conf/server.xml:/usr/local/tomcat/conf/server.xml            
             - ./appsrv/conf/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
             - ./appsrv/conf/logging.properties:/usr/local/tomcat/conf/logging.properties
-#            - ./appsrv/webapps/:/usr/local/tomcat/webapps
-            - ./appsrv/logs/:/usr/local/tomcat/logs
-#            - ./appsrv/ssl/:/usr/share/etc/ssl
+            # - ./appsrv/logs/:/usr/local/tomcat/logs
             - metadata-sp:/usr/share/etc/ssl/saml/:rw
             - metadata-idp:/usr/share/etc/ssl/arobas/metadata:ro
         networks:
@@ -44,16 +42,16 @@ services:
             args:
                 SERVERNAME: $EXPOSE_PROXY_AUTH_SRV_NAME
                 SCOPE: $EXPOSE_PROXY_AUTH_DOMAIN
-                PROXYPORT: $EXPOSE_PROXY_AUTH_PORT                
+                PROXYPORT: $EXPOSE_PROXY_HTTPS_PORT                
         depends_on: 
             - appsrv
-        ports:
-             - "8889:8080"
+        # ports:
+        #      - "8889:8080"
         volumes:
             - metadata-sp:/opt/shibboleth-idp/metadata_sp:rw
-#            - ./authsrv/metadata_sp/:/opt/shibboleth-idp/metadata_sp:rw
             - metadata-idp:/opt/shibboleth-idp/shared-metadata/:rw
-#            - ./authsrv/logs/:/usr/local/tomcat/logs
+            - ./authsrv/export_metadata/:/opt/shibboleth-idp/export_metadata:rw
+
         networks:
             arobas_network:
               aliases:
@@ -65,24 +63,17 @@ services:
             args:
                 SERVERNAME: $EXPOSE_PROXY_AUTH_SRV_NAME
                 SCOPE: $EXPOSE_PROXY_AUTH_DOMAIN
-                PROXYPORT: $EXPOSE_PROXY_AUTH_PORT
+                PROXYPORT: $EXPOSE_PROXY_HTTPS_PORT
                 SPTEST_HOST: $EXPOSE_SPTEST_HOST                
                 SPTEST_SECURE_PORT: $EXPOSE_SPTEST_SECURE_PORT
         depends_on: 
             - authsrv
         volumes:
-            # - ./sptest/shibboleth-sp/attribute-map.xml:/etc/shibboleth/attribute-map.xml
-            # - ./sptest/shibboleth-sp/sp-encrypt-cert.pem:/etc/shibboleth/sp-encrypt-cert.pem            
-            # - ./sptest/shibboleth-sp/sp-encrypt-key.pem:/etc/shibboleth/sp-encrypt-key.pem
-            # - ./sptest/shibboleth-sp/sp-signing-cert.pem:/etc/shibboleth/sp-signing-cert.pem            
-            # - ./sptest/shibboleth-sp/sp-signing-key.pem:/etc/shibboleth/sp-signing-key.pem
-            - ./sptest/appfiles:/var/www/html
             - metadata-sp:/usr/share/etc/ssl/saml/:rw
             - metadata-idp:/etc/shibboleth/metadata:ro
         networks:
             arobas_network:
         ports:
-            - "82:80"
             - "$EXPOSE_SPTEST_SECURE_PORT:443"
 
     proxy:
@@ -91,8 +82,8 @@ services:
             - appsrv
             - authsrv
         ports:
-            - "81:80"
-            - "$EXPOSE_PROXY_AUTH_PORT:443"
+            - "$EXPOSE_PROXY_HTTP_PORT:80"
+            - "$EXPOSE_PROXY_HTTPS_PORT:443"
         volumes:
             - ./proxy/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf
             - ./proxy/conf/vhosts:/usr/local/apache2/conf/vhosts

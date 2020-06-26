@@ -1,10 +1,15 @@
-appsrv/webapps/*
-appsrv/conf/Catalina/*
 appsrv/logs/*
+appsrv/conf/Catalina/*
+appsrv/pre_build/*
+!appsrv/pre_build/README.md
 database/data/*
 database/restore/*
 proxy/conf/vhosts/*/*
 proxy/www/*
+!proxy/www/admin/*
+!proxy/www/index.html
 authsrv/logs/*
 authsrv/deliverable/idp-mae.tar.gz
 authsrv/metadata_sp/last-activate.log
+authsrv/export_metadata/*
+!authsrv/export_metadata/README.md

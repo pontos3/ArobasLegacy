@@ -21,9 +21,11 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Released]
 
-## [draft-1.1.0] - 2020-05-28
+## [draft-1.1.0] - 2020-06-26
 
 ### Added
+
+Création d'un arborescence pour l'ajout d'une UI de gestion des utilisateurs des droits utilisés pour l'authentification:
 
 Ajout des éléments nécessaires pour l'authentification des utilisateurs:
 
