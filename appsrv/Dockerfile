@@ -16,9 +16,9 @@ WORKDIR /opt/
 RUN for antfile in $(find . -name 'dynamique*.xml'); do ant -buildfile ${antfile}; done; \
     mkdir -p /opt/build/saml; \
     mkdir -p /opt/build/webapps; \
-    cp -f /opt/*/*/nouveauLivrable/*.war /opt/build/webapps/; \
-    cp -f /opt/*/*/*_metadata.xml /opt/build/saml/; \
-    cp -f /opt/*/*/*.jks /opt/build/saml/;
+    cp -f /opt/*/*/nouveauLivrable/*.war /opt/build/webapps/ 2>/dev/null || : ; \
+    cp -f /opt/*/*/*_metadata.xml /opt/build/saml/  2>/dev/null || : ; \
+    cp -f /opt/*/*/*.jks /opt/build/saml/  2>/dev/null || : ;
 
 # Création du serveur tomcat avec copy des fichiers générés
 FROM tomcat:6.0.48
