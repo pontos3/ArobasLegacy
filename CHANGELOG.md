@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Released]
 
-## [draft-1.1.0] - 2020-06-26
+## [1.1.0] - 2020-06-26
 
 ### Added
 
