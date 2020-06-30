@@ -28,161 +28,69 @@ docker run hello-world
 .
 ├── appsrv
 │   ├── conf            ## Répertoire de configuration de tomcat
-│   ├── webapps         ## Répertoire où déployer les fichiers war des applications
+│   ├── pre_build       ## Répertoire où déployer les fichiers répertoires contenant les pré-livrables A3
+│   ├── scripts         ## Répertoire contenant le script de démarrage du conteneur appsrv
 │   └── logs            ## Répertoire où les logs seronts déposés
+├── authsrv             ## Le configuration du serveur de base de données
+│   ├── delivrable      ## répertoire contenant le livrable shibboleth
+│   ├── export_metadata ## L'emplacement où dpéoser les fichier métadata des applications clientes du SSO
+│   ├── logs            ## L'emplacement à destination des logs lorsqu'ils sont activés dan le fichier docker-compose.
+│   └── scripts         ## scripts de lancement du conteneur et de prise en compte des métadonnées.
 ├── database            ## Le configuration du serveur de base de données
-│   ├── Dockerfile      ## Le DokerFile permettant d'adapter la base de données
-│   ├── restore         ## L'emplacement des fichier .bak pour les restauration des BDD
+│   ├── backup          ## répertoire vers lequels ont peut envoyer les sauvegardes de base de données
+│   ├── restore         ## L'emplacement des fichier .bak pour les restaurations automatique des BDD
 │   └── scripts         ## Les sqcripts SQL et BASH pour la restauration des bases de données
-├── docker-compose.yaml ## Fichier permettant de monter l'infrastructure
 ├── proxy
 │   ├── conf            ## Répertoire de conf Apache
 │   └── www             ## Répertoire des fichiers statics des applications
+├── sptest
+│   ├── pre_build       ## emplacement des fichiers de configuration du fichier sptest
+│   └── scripts         ## scripts de lancement du conteneur.
+├── docker-compose.yaml ## Fichier permettant de monter l'infrastructure
 └── README.md
 ```
 
-## Adapter le fichier docker-compose.yaml à son poste
+## Adapter le fichier .env à son poste
 
-Editer le fichier docker-compose.yaml afin d'en adapter les paramètres à votre environnement.
+Editer le fichier .env afin d'en adapter les paramètres à votre environnement.
 
-Le yaml suivant vous indique l'emplacement de des paramètres.
+L'exemple suivant vous indique les valeurs à mettre par défaut.
 
-``` yaml
-version: '3.7'
-services:
-    database:
-        build: ./database
-        image: mcr.microsoft.com/mssql/server:2017-latest
-        environment:
-            SA_PASSWORD: {DATABASE_SA_PASSWORD}
-            ACCEPT_EULA: Y
-        volumes:
-            - {DATABASE_DATA_DIR}:/var/opt/mssql/data/
-            - {DATABASE_BACKUP_DIR}:/var/opt/mssql/backup/
-            - {DATABASE_RESTORE_DIR}:/var/opt/mssql/restore/
-        ports:
-            - "{DATABASE_PORT}:1433"
-        networks:
-            arobas_network:
+``` properties
+# Numéro de port d'accès aux bases de données sqlserveur 2017 depuis le host
+EXPOSE_EXPOSE_DATABASE_PORT=1433
 
-    appsrv:
-        image: tomcat:6.0.48
-        depends_on:
-            - database
-        ports:
-            - "{APPSRV_PORT}:8080"
-        volumes:
-            - {APPSRV_CONF_DIR}:/usr/local/tomcat/conf
-            - {APPSRV_WEBAPPS_DIR}:/usr/local/tomcat/webapps
-            - {APPSRV_LOGS_DIR}:/usr/local/tomcat/logs
-        networks:
-            arobas_network:
+# Numéro de port sécurisé sur lequel les applications et l'authentification sont accessibles depuis le host
+EXPOSE_PROXY_HTTPS_PORT=443
 
-    proxy:
-        image: httpd:2.4.41-alpine
-        depends_on:
-            - appsrv
-        ports:
-            - "{PROXY_PORT}:80"
-        volumes:
-            - {PROXY_CONF_DIR}:/usr/local/apache2/conf/
-            - {PROXY_WEB_DIR}:/usr/local/apache2/htdocs/
-        networks:
-            arobas_network:
+# Numéro de port sur lequel les api sont accessibles depuis le host
+EXPOSE_PROXY_HTTP_PORT=80
 
-networks:
-    arobas_network:  # Docker sharing network
+# nom d'hôte utilisé pour l'accès aux applications
+EXPOSE_PROXY_APP_HOST=localhost
 
+#nom du serveur depuis lequel l'idp est accessible sur l'hôte.
+EXPOSE_PROXY_AUTH_SRV_NAME=idp
+
+#nom de domaine depuis lequel l'idp est accessible sur l'hôte
+EXPOSE_PROXY_AUTH_DOMAIN=localhost
+
+EXPOSE_SPTEST_HOST=localhost
+EXPOSE_SPTEST_SECURE_PORT=445
 ```
 
-### les différents paramètres
+Dans le cas ou l'on souhaite adapter  le fichier, il faut s'assure des points suivants:
 
-La liste ci-dessous indique la signification de chaque paramètre du fichier docker-compose.yaml
+* les noms de domaine doivent être résolus par la machine hôte.
+* les numéros de port doivent être libres pour que les conteneurs démarrent
 
-* ***{DATABASE_SA_PASSWORD}*** : Mot de passe du compte SA de la base ***SQLSERVER***.
-
-* ***{DATABASE_DATA_DIR}*** : Répertoire hôte qui contiendra les fichiers de base de données ***SQLSERVER***.
-
-* ***{DATABASE_BACKUP_DIR}*** : Répertoire hôte utilisé lors des sauvegarde des bases de données ***SQLSERVER***.
-
-* ***{DATABASE_RESTORE_DIR}*** : Répertoire hôte où déposer les fichier backup de base de données pour créer ou écraser une base de données ***SQLSERVER***. Exécution d'un CRON toutes les 30 secondes, prenant en compte les fichiers ***.bak*** pour les restaurer et les transformer en fichier ***.oldbak***.
-
-* ***{DATABASE_PORT}*** : Port hôte permettant d'accéder à la base de données depuis l'hôte pour exécuter des scripts sql.
-
-* ***{APPSRV_PORT}*** : Port hôte permettant d'accéder au service ***Tomcat*** en direct sans passer par le proxy apache
-
-* ***{APPSRV_CONF_DIR}*** : Emplacement des fichiers de configuration ***Tomcat*** pris en compte par le conteneur tomcat au démarrage.
-
-* ***{APPSRV_WEBAPPS_DIR}***: Emplacement où déposer les livrables (fichiers ***.war*** ) pour qu'ils soient pris en compte par ***Tomcat***.
-
-* ***{APPSRV_LOGS_DIR}***: Emplacement des fichiers de log générés par ***Tomcat***.
-
-* ***{PROXY_PORT}*** : Port de l'hôte qui permettra d'accéder au service web et donc aux applications déployées.
-
-* ***{PROXY_CONF_DIR}*** : Répertoire de l'hôte contenant les fichiers de configuration du service ***Apache-httpd*** pris en compte au démarrage du service.
-
-* ***{PROXY_WEB_DIR}*** : Répertoire de l'hôte contenant les fichiers statiques (pages WEB) du service ***Apache-httpd*** pris en compte au démarrage du service.
-
-### L'exemple ci-dessous est valide sur une debian
-
-Le code yaml ci-dessous vous donne un exemple de configuration qui devrait fonctionner.
-
-<details>
-  <summary>Click to expand!</summary>
-
-```yaml
-version: '3.7'
-services:
-    database:
-        build: ./database
-        image: mcr.microsoft.com/mssql/server:2017-latest
-        environment:
-            SA_PASSWORD: P@ssw0rd
-            ACCEPT_EULA: Y
-        volumes:
-            - /var/opt/data/mssql/data/:/var/opt/mssql/data/
-            - /var/opt/data/mssql/backup/:/var/opt/mssql/backup/
-            - ./database/restore/:/var/opt/mssql/restore/
-        ports:
-            - "1433:1433"
-        networks:
-            arobas_network:
-
-    appsrv:
-        image: tomcat:6.0.48
-        depends_on:
-            - database
-        # ports:
-        #     - "8888:8080"
-        volumes:
-            - ./appsrv/conf/:/usr/local/tomcat/conf
-            - ./appsrv/webapps/:/usr/local/tomcat/webapps
-        networks:
-            arobas_network:
-
-    proxy:
-        image: httpd:2.4.41-alpine
-        depends_on:
-            - appsrv
-        ports:
-            - "81:80"
-        volumes:
-            - ./proxy/conf/:/usr/local/apache2/conf/ #/tmp/pse/apache2/conf
-            - ./proxy/www/:/usr/local/apache2/htdocs/ #/tmp/pse/apache2/htdocs
-        networks:
-            arobas_network:
-
-networks:
-    arobas_network:
-```
-
- </details>
+>**Pour information** : des exemples d'URL d'accès aux API, à l'authentification ou à l'application Arobas, sont donnés dans le fichier **".env"**
 
 ## Gestion des conteneurs
 
-### Démarrer l'ensemble des conteneurs
+### Télécharger les images, contruire et démarrer l'ensemble des conteneurs
 
-La ligne de commande ci-dessous vous permet de télécharger et exécuter les différents conteneurs nécessaire à l'infra.
+La ligne de commande ci-dessous vous permet de télécharger, contstruire et  exécuter les différents conteneurs nécessaires à l'infra. Cette commande doit être exécutée à la racine du projet afin que le fichier .env soit pris en compte. Si le fichier .env est modifié, il est nécessaire d'exécuter à nouveau cette commande.
 
 ```bash
 docker-compose up -d --build
@@ -194,37 +102,53 @@ Le résultat attendu est le suivant :
   <summary>Click to expand!</summary>
 
 ```bash
-    Creating network "arobas_env_arobas_network" with the default driver
-    Building database
-    Step 1/5 : FROM mcr.microsoft.com/mssql/server:2017-latest
-    ---> f78cdbed6225
-    Step 2/5 : VOLUME /var/opt/mssql/restore
-    ---> Running in 6cb93e46a35f
-    Removing intermediate container 6cb93e46a35f
-    ---> 7ba38a9c73db
-    Step 3/5 : COPY ./scripts/bash/*.sh /opt/scripts/bash/
-    ---> d20480a92940
-    Step 4/5 : RUN chmod 0744 /opt/scripts/bash/*.sh
-    ---> Running in d168fdfcc3c8
-    Removing intermediate container d168fdfcc3c8
-    ---> 5f7099e1d84a
-    Step 5/5 : CMD /opt/scripts/bash/wrapper.sh
-    ---> Running in d7c3ad467fb3
-    Removing intermediate container d7c3ad467fb3
-    ---> 49d14143f4b9
+.
+.
+.
+Step 10/16 : FROM unicon/shibboleth-sp:3.0.4
+ ---> 201cbf433f22
+Step 11/16 : WORKDIR /etc/shibboleth/
+ ---> Using cache
+ ---> c7dff3526bc4
+Step 12/16 : COPY --from=subst /opt/pre_build/sp_shibboleth/ /etc/shibboleth/
+ ---> Using cache
+ ---> a14e242bc972
+Step 13/16 : COPY --from=subst /opt/pre_build/appfiles/ /var/www/html/
+ ---> Using cache
+ ---> db8fab78f20f
+Step 14/16 : COPY scripts/*.sh /opt/sptest/bin/
+ ---> Using cache
+ ---> 81d6424ec995
+Step 15/16 : RUN mkdir -p /usr/share/etc/ssl/saml/
+ ---> Using cache
+ ---> cc4d85e8e43b
+Step 16/16 : CMD [ "/opt/sptest/bin/wrapper.sh" ]
+ ---> Using cache
+ ---> 58b7d165936c
 
-    Successfully built 49d14143f4b9
-    Successfully tagged mcr.microsoft.com/mssql/server:2017-latest
-    Creating arobas_env_database_1 ... done
-    Creating arobas_env_appsrv_1   ... done
-    Creating arobas_env_proxy_1    ... done
+Successfully built 58b7d165936c
+Successfully tagged arobaslegacy_sptest:latest
+Creating network "arobaslegacy_arobas_network" with the default driver
+Creating arobaslegacy_database_1 ... done
+Creating arobaslegacy_appsrv_1   ... done
+Creating arobaslegacy_authsrv_1  ... done
+Creating arobaslegacy_sptest_1   ... done
+Creating arobaslegacy_proxy_1    ... done
 ```
 
  </details>
 
+### Démarrer l'ensemble des conteneurs sont les re-contruire
+
+Dans le cas ou le fichier .env n'a pas été modifié, il est possible de re-démarrer l'ensemble des conteneurs plus rapidement. La ligne de commande suivante, répond à ce besoin :
+
+```bash
+docker-compose up -d
+```
+
 ### Arrêter les conteneurs en les supprimant
 
-La ligne de commande ci-dessous vous permet d'arrêter tous les conteneurs et de supprimer les images associées. Les données et les fichiers de configuration ne sont pas perdus.
+La ligne de commande ci-dessous vous permet d'arrêter tous les conteneurs et de supprimer les images associées. Les données et les fichiers de configuration ne sont pas perdus. Cette commande doit être exécutée à la racine du projet afin que le fichier .env soit pris en compte.
 
 ```bash
 docker-compose down
@@ -236,13 +160,17 @@ Le résultat attendu est le suivant :
   <summary>Click to expand!</summary>
 
 ```bash
-Stopping arobas_env_proxy_1    ... done
-Stopping arobas_env_appsrv_1   ... done
-Stopping arobas_env_database_1 ... done
-Removing arobas_env_proxy_1    ... done
-Removing arobas_env_appsrv_1   ... done
-Removing arobas_env_database_1 ... done
-Removing network arobas_env_arobas_network
+Stopping arobaslegacy_proxy_1    ... done
+Stopping arobaslegacy_sptest_1   ... done
+Stopping arobaslegacy_authsrv_1  ... done
+Stopping arobaslegacy_appsrv_1   ... done
+Stopping arobaslegacy_database_1 ... done
+Removing arobaslegacy_proxy_1    ... done
+Removing arobaslegacy_sptest_1   ... done
+Removing arobaslegacy_authsrv_1  ... done
+Removing arobaslegacy_appsrv_1   ... done
+Removing arobaslegacy_database_1 ... done
+Removing network arobaslegacy_arobas_network
 ```
 
 </details>
@@ -251,62 +179,60 @@ Removing network arobas_env_arobas_network
 
 ### Créer la base de données
 
-Il est possible de créer une base de données en déposant un simple fichier de backup sqlserver dans le répertoire **"{DATABASE_RESTORE_DIR}"**.
+Il est possible de créer une base de données en déposant un simple fichier de backup sqlserver dans le répertoire **"./database/restore"**.
 
-Toutes les 60 secondes, un script consomme les fichiers **.bak** présents dans le répertoire **"{DATABASE_RESTORE_DIR}"** afin de restaurer une base de données du même nom. À la suite de ce traitement, l'extension du fichier est changée en **.oldbak**
+Toutes les 60 secondes, un script consomme les fichiers **.bak** présents dans le répertoire **"./database/restore"** afin de restaurer une base de données du même nom. À la suite de ce traitement, l'extension du fichier est changée en **.oldbak**
 
 > Attention Dans le cas où une base de données avec le même nom que le fichier à restaurer existe déjà, la base sera alors écrasée par le fichier restauré.
 
 ### Accéder à la base de données
 
-La base de données restaurée est alors accessible en local sur le port **"{DATABASE_PORT}"** à l'aide du compte **"SA"** et du mot de passe **"{DATABASE_SA_PASSWORD}"**.
+La base de données restaurée est alors accessible en local sur le port **"{EXPOSE_DATABASE_PORT}"** à l'aide du compte **"SA"** et du mot de passe **"P@ssw0rd"**.
 
-La base de données sera également disponible par le conteneur **"appsrv"**. Le nom dns à utiliser est **"database"**, le port est **"1433"**, le compte est **"SA"** et le mot de passe est celui spécifié dans le fichier ***docker-compose.yaml*** (paramètre *"{DATABASE_SA_PASSWORD}"*)
+La base de données sera également disponible par le conteneur **"appsrv"**. Le nom dns à utiliser est **"database"**, le port est **"1433"**, le compte est **"SA"** et le mot de passe est **"P@ssw0rd"**
+
+>debut de à modifier
 
 ## Gestion du serveur applicatif **"Tomcat"**
 
 ### Déployer une application WEB sur appsrv
 
-Pour effectuer cette opération, deux solutions sont possibles
+Pour effectuer cette opération, il est nécessaire de posséder une archive xxx4docker.tar.gz et effectuer les opérations ci-dessous :
 
-#### déployer par dépot de fichiers
+* déposer l'archive à la racine du projet.
+* ouvrir une ligne de commande à la racine du projet
+* décompresser l'archive à l'aide de la commande ci-dessous :
 
-Effectuer les opérations suivantes dans l'ordre :
+```bash
+tar -xzf shibboleth4docker.tar.gz -C .
+```
 
-* renommer l'extension du fichier *".war"* en *".newwar"*
-* copie le fichier en extension *".newwar"* dans le répertoire  **"{APPSRV_WEBAPPS_DIR}"** soit **./appsrv/webapps/** dans l'exemple
-* renommer l'extension du fichier *".newwar"* en *".war"*
-* laisser tomcat intégrer le fichier et créer un répertoire avec le nom de l'application.
-
-#### déployer à l'aide du manager tomcat
-
-Le manager tomcat est accessible à travers le proxy apache. Il est possible de déployer ue application à travers le manager. Effectuer les opérations suivantes dans l'ordre :
-
-* Accéder au manager par l'url [manager](http://localhost:81/admin/manager/html)
-* Déployer le war à l'aide du formulaire.
-
-### Accéder au serveur applicatif
-
-## Le serveur proxy **"Apache-httpd**"
-
-* Déployer la partie statique de votre application dans le répertoire **"{PROXY_WEB_DIR}"**
-* Modifier le fichier [./proxy/conf/vhosts/allTomcat.conf](./proxy/conf/vhosts/allTomcat.conf) afin de tenir compte de la partie statique et de l'application web déployée au préalable.
-
-## Quelques exmples de requêtes
+## Quelques exmples de requêtes utiles.
 
 ### Suivre les logs du conteneur appsrv
 
-* Lister les fichiers de logs disponibles
+* Ouvrir une console bash sur le container appsrv
 
 ```bash
     docker-compose exec appsrv /bin/bash
+```
+
+* Lister les fichiers de logs disponibles sur le container appsrv
+
+```bash
     docker-compose exec appsrv ls -l /usr/local/tomcat/logs/
 ```
 
-* regarder les logs défiler avec la commande tail
+* regarder les logs défiler avec la commande tail sur appsrv
 
 ```bash
     docker-compose exec appsrv tail -f /usr/local/tomcat/logs/arobas-2.7.9.log
+```
+
+* regarder les logs défiler avec la commande tail sur authsrv
+
+```bash
+    docker-compose exec authsrv tail -f /usr/local/tomcat/logs/idp-process.log
 ```
 
 ### Modififier le fichier log4j d'une application pour passer en debug
