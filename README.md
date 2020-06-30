@@ -291,3 +291,46 @@ Le manager tomcat est accessible à travers le proxy apache. Il est possible de 
 
 * Déployer la partie statique de votre application dans le répertoire **"{PROXY_WEB_DIR}"**
 * Modifier le fichier [./proxy/conf/vhosts/allTomcat.conf](./proxy/conf/vhosts/allTomcat.conf) afin de tenir compte de la partie statique et de l'application web déployée au préalable.
+
+## Quelques exmples de requêtes
+
+### Suivre les logs du conteneur appsrv
+
+* Lister les fichiers de logs disponibles
+
+```bash
+    docker-compose exec appsrv /bin/bash
+    docker-compose exec appsrv ls -l /usr/local/tomcat/logs/
+```
+
+* regarder les logs défiler avec la commande tail
+
+```bash
+    docker-compose exec appsrv tail -f /usr/local/tomcat/logs/arobas-2.7.9.log
+```
+
+### Modififier le fichier log4j d'une application pour passer en debug
+
+* Regarder le contenu du fichier log4j.propoerties d'une application existante. L'exemple est donné pour arobasapi
+
+```bash
+    docker-compose exec appsrv cat /usr/local/tomcat/webapps/arobasapi/WEB-INF/classes/log4j.properties
+```
+
+* Copier le contenu du fichier log4j.propoerties dans un fichier sur l'hôte.
+
+```bash
+    docker cp arobas_env_appsrv_1:/usr/local/tomcat/webapps/arobasapi/WEB-INF/classes/log4j.properties ./appsrv/conf/tmp/log4j.properties
+```
+
+* Modifier le fichier avant de le renvoyer sur le container.
+
+```bash
+    docker cp ./appsrv/conf/tmp/log4j.properties arobas_env_appsrv_1:/usr/local/tomcat/webapps/arobasapi/WEB-INF/classes/log4j.properties
+```
+
+* Redémarrer le conteneur afin que la modification soit prise en compte
+
+```bash
+    docker-compose restart appsrv
+```

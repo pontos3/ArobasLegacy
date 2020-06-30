@@ -8,7 +8,7 @@ services:
             ACCEPT_EULA: Y
         volumes:
             - /var/opt/data/mssql/data/:/var/opt/mssql/data/
-            - /var/opt/data/mssql/backup/:/var/opt/mssql/backup/
+            - ./database/backup/:/var/opt/mssql/backup/:rw
             - ./database/restore/:/var/opt/mssql/restore/
         ports:
             - "$EXPOSE_DATABASE_PORT:1433"
@@ -30,7 +30,8 @@ services:
             - ./appsrv/conf/server.xml:/usr/local/tomcat/conf/server.xml            
             - ./appsrv/conf/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
             - ./appsrv/conf/logging.properties:/usr/local/tomcat/conf/logging.properties
-            # - ./appsrv/logs/:/usr/local/tomcat/logs
+            - ./appsrv/logs/:/usr/local/tomcat/logs:rw
+            # - ./appsrv/conf/tmp/webapps/:/usr/local/tomcat/webapps/
             - metadata-sp:/usr/share/etc/ssl/saml/:rw
             - metadata-idp:/usr/share/etc/ssl/arobas/metadata:ro
         networks:

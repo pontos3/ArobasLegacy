@@ -4,6 +4,9 @@ appsrv/pre_build/*
 !appsrv/pre_build/README.md
 database/data/*
 database/restore/*
+!database/restore/README.md
+database/backup/*
+!database/backup/README.md
 proxy/conf/vhosts/*/*
 !proxy/conf/vhosts/allTomcat.conf
 proxy/conf/vhosts_secure/*/*
