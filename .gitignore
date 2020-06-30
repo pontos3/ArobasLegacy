@@ -1,3 +1,4 @@
+001-livrables/*
 appsrv/logs/*
 appsrv/conf/Catalina/*
 appsrv/pre_build/*
