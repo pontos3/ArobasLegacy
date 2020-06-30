@@ -8,37 +8,95 @@ services:
             ACCEPT_EULA: Y
         volumes:
             - /var/opt/data/mssql/data/:/var/opt/mssql/data/
-            - /var/opt/data/mssql/backup/:/var/opt/mssql/backup/
+            - ./database/backup/:/var/opt/mssql/backup/:rw
             - ./database/restore/:/var/opt/mssql/restore/
         ports:
-            - "1433:1433"
+            - "$EXPOSE_DATABASE_PORT:1433"
         networks:
             arobas_network:
     
     appsrv:
-        image: tomcat:6.0.48
+        build:
+            context: ./appsrv
+            args:
+                PROXY_APP_SCHEME: "https"
+                PROXY_APP_HOST: $EXPOSE_PROXY_APP_HOST
+                PROXY_APP_PORT: $EXPOSE_PROXY_HTTPS_PORT
         depends_on: 
             - database
-        ports:
-             - "8888:8080"
+        # ports:
+        #      - "8888:8080"
         volumes:
-            - ./appsrv/conf/:/usr/local/tomcat/conf
-            - ./appsrv/webapps/:/usr/local/tomcat/webapps
-            - ./appsrv/logs/:/usr/local/tomcat/logs
+            - ./appsrv/conf/server.xml:/usr/local/tomcat/conf/server.xml            
+            - ./appsrv/conf/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
+            - ./appsrv/conf/logging.properties:/usr/local/tomcat/conf/logging.properties
+            - ./appsrv/logs/:/usr/local/tomcat/logs:rw
+            - metadata-sp:/usr/share/etc/ssl/saml/:rw
+            - metadata-idp:/usr/share/etc/ssl/arobas/metadata:ro
         networks:
             arobas_network:
 
-    proxy:
-        image: httpd:2.4.41-alpine
+    authsrv:
+        build:
+            context: ./authsrv
+            args:
+                SERVERNAME: $EXPOSE_PROXY_AUTH_SRV_NAME
+                SCOPE: $EXPOSE_PROXY_AUTH_DOMAIN
+                PROXYPORT: $EXPOSE_PROXY_HTTPS_PORT                
         depends_on: 
             - appsrv
-        ports:
-            - "81:80"
+        # ports:
+        #      - "8889:8080"
         volumes:
-            - ./proxy/conf/:/usr/local/apache2/conf/ #/tmp/pse/apache2/conf
-            - ./proxy/www/:/usr/local/apache2/htdocs/ #/tmp/pse/apache2/htdocs
+            - metadata-sp:/opt/shibboleth-idp/metadata_sp:rw
+            - metadata-idp:/opt/shibboleth-idp/shared-metadata/:rw
+            - ./authsrv/export_metadata/:/opt/shibboleth-idp/export_metadata:rw
+
+        networks:
+            arobas_network:
+              aliases:
+                - idpmae.dev.diplomatie.gouv.fr
+
+    sptest:
+        build: 
+            context: ./sptest
+            args:
+                SERVERNAME: $EXPOSE_PROXY_AUTH_SRV_NAME
+                SCOPE: $EXPOSE_PROXY_AUTH_DOMAIN
+                PROXYPORT: $EXPOSE_PROXY_HTTPS_PORT
+                SPTEST_HOST: $EXPOSE_SPTEST_HOST                
+                SPTEST_SECURE_PORT: $EXPOSE_SPTEST_SECURE_PORT
+        depends_on: 
+            - authsrv
+        volumes:
+            - metadata-sp:/usr/share/etc/ssl/saml/:rw
+            - metadata-idp:/etc/shibboleth/metadata:ro
+        networks:
+            arobas_network:
+        ports:
+            - "$EXPOSE_SPTEST_SECURE_PORT:443"
+
+    proxy:
+        image: httpd:2.4.41
+        depends_on: 
+            - appsrv
+            - authsrv
+        ports:
+            - "$EXPOSE_PROXY_HTTP_PORT:80"
+            - "$EXPOSE_PROXY_HTTPS_PORT:443"
+        volumes:
+            - ./proxy/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf
+            - ./proxy/conf/vhosts:/usr/local/apache2/conf/vhosts
+            - ./proxy/conf/vhosts_secure:/usr/local/apache2/conf/vhosts_secure
+            - ./proxy/conf/server.crt:/usr/local/apache2/conf/server.crt
+            - ./proxy/conf/server.key:/usr/local/apache2/conf/server.key
+            - ./proxy/www/:/usr/local/apache2/htdocs/
         networks:
             arobas_network:
 
 networks:
     arobas_network:
+
+volumes:
+    metadata-idp:
+    metadata-sp:

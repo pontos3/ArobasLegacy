@@ -68,8 +68,14 @@
     -->
     <Connector port="8080" protocol="HTTP/1.1" 
                connectionTimeout="20000" 
-               redirectPort="8443" 
+               redirectPort="8443"
+               secure="true"
                />
+     <!--
+               proxyName="localhost"
+               proxyPort="446"
+               scheme="https"
+     -->
      <!--      proxyName="localhost"
                proxyPort="81"-->
     <!-- A "Connector" using the shared thread pool-->
@@ -83,11 +89,11 @@
          This connector uses the JSSE configuration, when using APR, the 
          connector should be using the OpenSSL style configuration
          described in the APR documentation -->
-    <!--
-    <Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+
+    <!-- <Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
                maxThreads="150" scheme="https" secure="true"
-               clientAuth="false" sslProtocol="TLS" />
-    -->
+               clientAuth="false" sslProtocol="TLS" /> -->
+
 
     <!-- Define an AJP 1.3 Connector on port 8009 -->
     <!-- <Connector port="8009" 

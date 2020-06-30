@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>SP Test</title>
+</head>
+
+<body>
+    <h1>Connexion OK</h1><a href="https://${SPTEST_CALC_HOST_PORT}/Shibboleth.sso/Logout">(Deconnexion)</a><br>
+    <h3>Details de la session :</h3><br>
+    <iframe src="https://${SPTEST_CALC_HOST_PORT}/Shibboleth.sso/Session" height=500 width=1500></iframe>
+</body>
+
+</html>
