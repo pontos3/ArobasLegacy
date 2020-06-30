@@ -207,7 +207,7 @@ Pour effectuer cette opération, il est nécessaire de posséder une archive xxx
 tar -xzf shibboleth4docker.tar.gz -C .
 ```
 
-## Quelques exmples de requêtes utiles.
+## Quelques exmples de requêtes utiles
 
 ### Suivre les logs du conteneur appsrv
 
