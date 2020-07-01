@@ -21,7 +21,9 @@ RUN for antfile in $(find . -name 'dynamique*.xml'); do ant -buildfile ${antfile
     cp -f /opt/*/*/*.jks /opt/build/saml/  2>/dev/null || : ;
 
 # Création du serveur tomcat avec copy des fichiers générés
-FROM tomcat:6.0.48
+#FROM tomcat:6.0.48
+FROM tomcat:9.0.35-jdk8-openjdk
+#FROM tomcat:10.0.0-M6-jdk8-openjdk
 COPY --from=antbuild /opt/build/webapps/ /usr/local/tomcat/webapps/
 COPY --from=antbuild /opt/build/saml/ /usr/local/tomcat/saml/
 COPY scripts/*.sh /opt/appsrv/bin/

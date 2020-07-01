@@ -27,10 +27,10 @@ services:
         # ports:
         #      - "8888:8080"
         volumes:
-            - ./appsrv/conf/server.xml:/usr/local/tomcat/conf/server.xml            
+            # - ./appsrv/conf/server.xml:/usr/local/tomcat/conf/server.xml            
             - ./appsrv/conf/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
             - ./appsrv/conf/logging.properties:/usr/local/tomcat/conf/logging.properties
-            - ./appsrv/logs/:/usr/local/tomcat/logs:rw
+            # - ./appsrv/logs/:/usr/local/tomcat/logs:rw
             - metadata-sp:/usr/share/etc/ssl/saml/:rw
             - metadata-idp:/usr/share/etc/ssl/arobas/metadata:ro
         networks:
